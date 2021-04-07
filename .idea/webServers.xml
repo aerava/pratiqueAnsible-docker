@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="71533950-09d1-41bf-b47b-5ccf6b50ffe5" name="aeckeline-ubuntu">
+        <fileTransfer accessType="SFTP" host="192.168.1.60" port="22" sshConfigId="5cbf136e-b978-4bd0-94a2-5237c34cbe92" sshConfig="aeckeline@192.168.1.60:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
