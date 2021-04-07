@@ -1,0 +1,3 @@
+clonedebian ansible_host=192.168.1.86 ansible_user=aeckeline ansible_sudo_pass="aeckeline" ansible_ssh_extras_args='-o StrictHostKeyCheck=no'
+debian 192.168.1.87
+localhost

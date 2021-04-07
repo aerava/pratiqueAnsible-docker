@@ -1,0 +1,113 @@
+---
+- hosts: clonedebian
+  become: true
+
+  tasks:
+    - name: installation apache2
+      apt:
+        name: [build-essential, apache2, php, php-imap php-curl, php-gd]
+
+        state: latest
+
+    - name: installation librairies perl
+      apt:
+        name: [libxml-libxml-perl libnet-snmp-perl libperl-dev libnumber-format-perl libconfig-inifiles-perl libdatetime-perl libnet-dns-perl]
+        state: latest
+
+    - name: installation librairies graphiques
+      apt:
+        name: [libpng-dev libjpeg-dev libgd-dev]
+        state: latest
+
+    - name: installation outils de compilation standard
+      apt:
+        name: [gcc make autoconf libc6 unzip]
+        state: latest
+
+    - name: ajout du groupe nagcmd
+      group:
+        name: nagcmd
+        state: present
+
+    - name: ajout du compte de service nagios
+      user:
+        name: nagios
+        groups: nagcmd,www-data
+
+    - name: telechargement de nagios
+      get_url:
+        url: https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.5.tar.gz
+        dest: /tmp/
+
+    - name: telechargement plugins de nagios
+      get_url:
+        url: https://nagios-plugins.org/download/nagios-plugins-2.3.3.tar.gz
+        dest: /temp/
+
+    - name: decompression archive nagios
+      unarchive:
+        src: /tmp/nagios-4.4.5.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: decompression archive plugins nagios
+      unarchive:
+        src: /tmp/nagios-plugins-2.3.3.targz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: configuration et copliation de nagios
+      shell:
+        cmd: "{{ item }}"
+        chdir: /tmp/nagios-4.4.5/
+      with_items:
+        - ./configure --with-command-group=nagcmd --with-httpd_conf=/etc/apache2/sites-enabled/
+        - make all
+        - make install
+        - make install-init
+        - make install-config
+        - make install-commandmode
+        - make install-webconf
+
+    - name: configuration et compliation plugins de nagios
+      shell:
+        cmd: "{{ item }}"
+        chdir: /tmp/nagios-plugins-2.3.3/
+      with_items:
+        - ./configure --with-nagios-users=nagios --with-nagios-group=nagcmd
+        - make
+        - make install
+
+#configuration de nagios
+    - name: creation du compte nagiosadmin
+      htpasswd:
+        path: /usr/local/nagios/etc/htpasswd.users
+        name: nagiosadmin
+        password: 'pass'
+
+#configuration du fichier contact
+
+#redemarrage de nagios
+
+    - name: activation et redemarrage du service nagios
+      service:
+        name: nagios
+        state: restarted
+        enabled: yes
+      tags:
+        - restart_nagios
+
+#configuration d'apache
+
+    - name: activation du module cgi et rewrite
+      apache2_module:
+        state: present
+        name: [cgi rewrite]
+
+    - name: redemarrage du service apache2
+      service:
+        name : apache2
+        state: restarted
+        enabled: yes
+      tags:
+        - restart_apache
